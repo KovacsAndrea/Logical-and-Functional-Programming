@@ -1,0 +1,196 @@
+#|
+10.
+a) Write a function to return the product of all the numerical atoms from a list, at superficial level.
+b) Write a function to replace the first occurence of an element E in a given list with an other element O.
+c) Write a function to compute the result of an arithmetic expression memorised 
+ in preorder on a stack. Examples:
+ (+ 1 3) ==> 4 (1 + 3)
+ (+ * 2 4 3) ==> 11 [((2 * 4) + 3)
+ (+ * 2 4 - 5 * 2 2) ==> 9 ((2 * 4) + (5 - (2 * 2))
+d) Write a function to produce the list of pairs (atom n), where atom appears for n times in the 
+parameter list. Example: (A B A B A C A) --> ((A 4) (B 2) (C 1)).
+|#
+
+
+
+
+
+#|
+A) atomsProduct(l1,l2...ln) = {
+        1 if the list is empty
+        l1 * atomsProduct(l2,l3...ln) if l1 is a numerical atom
+        atomsProduct(l2,l3...ln) otherwise 
+}
+|#
+(defun atomsProduct(l)
+  (cond
+   ((null l) 1)
+   ((numberp (car l)) (* (car l) (atomsProduct (cdr l))))
+   (T (atomsProduct (cdr l)))
+  )
+)
+
+#|
+ (atomsProduct '(2 (2 3 (4 5)) 3 2 s f e 2 (9 9(9(9)))))
+ (atomsProduct '((1 2 3 4 5)))
+ (atomsProduct '(0 (1 2 4) 9 9));
+|#
+
+
+
+
+
+#|
+B) replaceElem(l1,l2...ln e o) = {
+        nil if the list is empty
+        o U replaceElem(l2,l3...ln e e) if l1 = e 
+        l1 U replaceElem (l2,l3...ln e o) otherwise
+}
+|#
+(defun replaceElem( l e o )
+  (cond
+   ((null l) nil)
+   ((= (car l) e) (cons o (replaceElem (cdr l) e e)))
+   (T (cons (car l) (replaceElem (cdr l)  e o)))
+   )
+)
+#|
+ (replaceElem '(1 2 3 4 2 3 2 2) 2 100)
+ (replaceElem '(1 2 3 4 5 6) 7 8)
+ (replaceElem '() 2 3)
+|#
+
+
+
+
+
+#|
+C)OPERATION - First we'll need a function that handles each simple operation written in preorder. 
+  It will have as parameters two integers and a string.
+  PREORDER EXP - The function that evaluates the entire expression will need to call the operation 
+  function for each simple operation, aka, go through the stack, solve the operation,
+  push it back on to the stack and repeat untill we're left with one single number.
+  This means it will have to check in this order for and atom (which is the string op), 
+  a numerical atom, and again a numerical atom.
+  This way we will have ->
+  (+ * 2 4 - 5 * 2 2)
+      + * 2 - not good
+      * 2 4 - good, (operation * 2 4) = 8 -> stack is now
+  (+ 8 ) U (- 5 * 2 2)
+      - 5 * - not good
+      5 * 2 - not good
+      * 2 2 - good (operation * 2 2) = 4 -> stack is now
+  (+ 8 - 5 4) - this is the result on the first run
+
+  (+ 8 - 5 4)
+      + 8 - - not good
+      8 - 5 - not good
+      - 5 4 - good (operation - 5 4) = 1 -> stack is now
+  (+ 8 1) - result on the second run
+  
+  (+ 8 1)
+      + 8 1 - good (operation + 8 1) = 9 ->
+  The stack is now (9) =>
+
+  SOLVE EXP - We get the final result on the third run. We will need another function that acts 
+  as a while. While the stack doesn't have only one element, it keeps calling preorderExp
+      
+  preorderExp(l1,l2...ln) = {
+            nil if the list is empty,
+            operation(l1 l2 l3) U preorderExp(l4,l5...ln) if l1 is an atom and l2 and l3 are num
+            l1 U preorderExp(l2,l3...ln) otherwise            
+  }
+
+  solveExp(l1,l2...ln) = {
+            nil if the list is empty
+            l1 if the list has only one element
+            solveExp(preorderExp(l1,l2...ln)) otherwise
+  }
+|#
+
+(defun operation( op a b )
+  (cond
+   ((string-equal op "+") (+ a b))
+   ((string-equal op "-") (- a b))
+   ((string-equal op "*") (* a b))
+   ((string-equal op "/") (/ a b))
+  )
+)
+
+(defun preorderExp(l)
+  (cond
+   ((null l) nil)
+   ((and (atom (car l)) (and (numberp(cadr l)) (numberp (caddr l)))) 
+                (cons (operation (car l) (cadr l) (caddr l)) (preorderExp (cdddr l))))
+   (T (cons (car l) (preorderExp (cdr l))))
+  )
+)
+
+(defun solveExp(l)
+  (cond
+   ((null l) nil)
+   ((null (cdr l)) (car l))
+   (T (solveExp (preorderExp l)))
+  )
+)
+#|
+ (solveExp '(+ 1 3))
+ (solveExp '(+ * 2 4 3))
+ (solveExp '(+ * 2 4 - 5 * 2 2))
+|#
+
+
+
+
+
+#|
+D) We'll need two additional functions, one that return the number of appearences of an atom in a list,
+   and one that removes all appearences of an atom in a list)
+   
+   noAppearences(l1,l2...ln, e) = {
+             0 if the list is empty,
+             1 + noAppearences(l2,l3...ln, e) if l1 = e
+             noAppearences(l2,l3...ln) otherwise
+   }
+   removeAllAppearences(l1,l2...ln, e) = {
+             nil if the list is empty
+             removeAtom(l2,l3...ln, e) if l1 = e
+             l1 U removeAllAppearences(l2,l3...lb, e) otherwise
+   }
+   frequencyList (l1,l2...ln) = {
+             nil if the list is empty
+             (l1, noAppearences(l1,l2...ln, l1)) U frequencyList(removeAllAppearences(l2...ln, l1)) 
+                                                                                      otherwise
+   }
+|#
+
+(defun noAppearences(l e)
+  (cond
+   ((null l) 0)
+   ((equal e (car l)) (+ 1 (noAppearences (cdr l) e)))
+   (T (noAppearences (cdr l) e))
+  )
+)
+
+(defun removeAllAppearences(l e)
+  (cond
+   ((null l) nil)
+   ((equal e (car l)) (removeAllAppearences (cdr l) e))
+   (T (cons (car l) (removeAllAppearences (cdr l) e)))
+  )
+)
+
+(defun frequencyList (l)
+  (cond
+   ((null l) nil)
+   (T (cons (list (car l) (noAppearences l (car l))) 
+          (frequencyList (removeAllAppearences (cdr l) (car l)))))
+  )
+)
+
+#|
+  (frequencyList '(A B A B A C A))
+  (frequencyList '(A B C D E F G H))
+  (frequencyList '(A A A A))
+  (frequencyLIST '())
+|#

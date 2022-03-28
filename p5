@@ -1,0 +1,132 @@
+;5.
+;a) Write twice the n-th element of a linear list. Example: for (10 20 30 40 50) and n=3 will produce (10 
+;20 30 30 40 50).
+;b) Write a function to return an association list with the two lists given as parameters. 
+; Example: (A B C) (X Y Z) --> ((A.X) (B.Y) (C.Z)).
+;c) Write a function to determine the number of all sublists of a given list, on any level. 
+; A sublist is either the list itself, or any element that is a list, at any level. Example: 
+; (1 2 (3 (4 5) (6 7)) 8 (9 10)) => 5 lists:
+;(list itself, (3 ...), (4 5), (6 7), (9 10)).
+;d) Write a function to return the number of all numerical atoms in a list at superficial level.
+
+
+
+
+
+;A) doubleElem(l1,l2...ln) = {
+;       the list if the position is smaller or equal to 0
+;       the list if the position is greater than the length of the lsit
+;       nil if the list is empty 
+;       l1 U doubleElem(l2,l3...ln) if l1 is not on position n 
+;       l1 U l1 U doubleElem(l2,l3...ln) if l1 is on position n
+; doubleElem(L - linear list of integers, 
+            ;N - integer, the given position 
+            ;P - integer, initialized with 1, current position
+; flow model (i, i, i)
+
+(defun doubleElem(l  n  p)
+  (cond
+   ((<= n 0) l)
+   ((< n p)  l )
+   ((null l) nil)
+   ((= n p) (append   (list (car l) (car l)) (doubleElem (cdr l) n (+ p 1)))) 
+   (t (cons (car l) (doubleElem  (cdr l) n  (+ p 1))))
+  )
+)
+(defun doubleElemMain(l n)
+  (cond
+   (t (doubleElem l n 1))
+  )
+)
+#|
+ (doubleElemMain '(1 2 3 4 5) 3)
+ (doubleElemMain '() 3)
+ (doubleElemMain '(1 2 3 4 5) -2)
+ (doubleElemMain '(1 2 3 4 5) 10)
+ (doubleElemMain '(1 2 3 4 5) 5)
+ (doubleElemMain '(1 2 3 4 5) 1)
+|# 
+
+
+
+
+
+#|
+B) associated(l1,l2...ln, p1,p2...pm)={
+        nil if n = 0 and m = 0
+        (l1, null) U associated (l2,l3...ln, ()) if m = 0 
+        (null, p1) U associated ((), p2,p3...pm) if n = 0
+        (l1, p1) U associated (l2,l3...ln, p2,p3...pm) otherwise
+}
+|#
+(defun associated( l1 l2 )
+  (cond
+   ((and (null l1) (null l2)) nil)
+   ((null l1) (cons   (list nil (car l2)) (associated l1 (cdr l2))))
+   ((null l2) (cons   (list (car l1) nil) (associated (cdr l1) l2)))
+   (t         (cons   (cons (car l1) (car l2)) (associated (cdr l1) (cdr l2))))
+  )
+)
+#|
+ (associated '(1 2 3) '(4 5 6))
+ (associated '() '())
+ (associated '(1 2 3 4 5 6) '(7 8 9))
+ (associated '(1 2 3) '(4 5 6 7 8 9))
+ (associated '(A B C) '(X Y Z))
+ (associated '(A B C D E F G) '(X Y Z))
+ (associated '(A B C) '(S U V W X Y Z))
+|#
+
+
+
+
+
+#|
+C)  noSublists(l1,l2..ln) = {
+         1 if the list is empty 
+         noSublists(l2,l3...ln) otherwise (l1 is an atom)
+         noSublists(l1) + noSublists(l2,l3...ln) if l1 is a list
+}
+|#
+
+(defun noSublists(l)
+  (cond
+   ((null l) 1)
+   ((atom (car l)) (noSublists (cdr l)))
+   (t (+ (noSublists (car l)) (noSublists (cdr l))))
+  )
+)
+
+#|
+ (noSublists '(1 2 (3 (4 5) (6 7)) 8 (9 10)))
+ (noSublists '(1 2 3 4 5))
+ (noSublists '(1 (2 (3 (4 (5 (6 (7 (8 (9))))))))))
+|#
+
+
+
+
+
+#|
+D) noAtoms(l1,l2...ln) = {
+           0 if the list is empty
+           1 + noAtoms(l2,l3...ln) if l1 is an atom
+           0 + noAtoms(l2,l3...ln) if l1 is not an atom (otherwise)
+}
+|#
+(defun noAtoms(l)
+  (cond
+   ((null l) 0)
+   ((numberp (car l)) (+ 1 (noAtoms (cdr l))))
+   (t (noAtoms(cdr l)))
+  )
+)
+#|
+ (noAtoms '(1 s (3 (4 5) (6 7)) 8 (9 10)))
+ (noAtoms '(1 2 3 4 5 6))
+ (noAtoms '((1 2 3 4 5 6)))
+ (noAtoms '((1 2) (1 2) (1 2)))
+ (noAtoms '(1 (1 2) 1 () s f s 3))
+|#
+
+

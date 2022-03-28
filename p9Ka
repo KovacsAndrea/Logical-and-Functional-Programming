@@ -1,0 +1,29 @@
+#|
+_remove(l1l2...ln, e) = {
+        nil if l1 ia an atom and l1 = e
+        l1  if l1 is an atom and l1 != e
+        _remove(l1) U _remove(l2...ln, e) otherwise 
+}
+|#
+
+(defun _remove (l e )
+    (cond
+        ((and (atom l) (if (= l e) nil l)))
+        ((listp l) (mapcar #'(lambda (a) (_remove a e )) l))
+    )
+)
+#|
+remove_nil (l1l2...ln) = {
+      [] if the list is empty
+      l1 if l1 is an atom
+      remove_nil(l1) otherwise
+}
+|#
+(defun remove_nil (l result)
+  (cond
+   ((and (list l) (equal (car l) NIL)) (remove_nil (cdr l) result))
+   ((list l) (remove_nil (cdr l) result))
+   (T (remove_nil l result))
+   )
+)
+

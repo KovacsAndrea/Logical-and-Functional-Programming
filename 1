@@ -1,0 +1,380 @@
+#||#
+
+#|
+As an example, the tree
+   A
+ /   \
+B     C              TREE 1
+     / \
+     D  E
+is represented as (A 2 B 0 C 2 D 0 E 0) 
+reversed (0 E 0 D 2 C 0 B 2 A)
+
+
+     A
+   /   \
+  B     C             TREE 2
+ /     / \
+M      D  E
+      /
+     F
+is represented as (A 2 B 1 M 0 C 2 D 1 F 0 E 0)
+REVERSED (0 E 0 F 1 D 2 C 0 M 1 B 2 A)
+
+      A
+   /    \
+  B      C            TREE 3
+ / \     / \
+M   N    D  E
+        /
+       F
+is represented as (A 2 B 2 M 0 N 0 C 2 D 1 F 0 E 0)
+REVERSED (0 E 0 F 1 D 2 C 0 N 0 M 2 B 2 A)
+
+       A
+    /     \
+   /       \
+  B         C         TREE 4
+ / \        / \
+M   N      D  E
+     \    /
+      P  F
+represented as (A 2 B 2 M 0 N 1 P 0 C 2 D 1 F 0 E 0)
+REVERSED (0 E 0 F 1 D 2 C 0 P 1 N 0 M 2 B 2 A) 
+
+       A
+    /     \
+   /       \
+  B         C         TREE 5
+ / \        / \
+M   N      D  E
+   /  \   /
+  Q    P  F
+represented as (A 2 B 2 M 0 N 2 Q 0 P 0 C 2 D 1 F 0 E 0)
+REVERSED (0 E 0 F 1 D 2 C 0 P 0 Q 2 N 0 M 2 B 2 A)
+
+         A
+         /
+        B
+       /
+      C               TREE 6
+     /
+    D
+   /
+  E
+represented as (A 1 B 1 C 1 D 1 E 0)
+
+
+ inorder is  (left root right)
+for tree 1, inorder is:#||#
+
+#|
+As an example, the tree
+   A
+ /   \
+B     C              TREE 1
+     / \
+     D  E
+is represented as (A 2 B 0 C 2 D 0 E 0) 
+reversed (0 E 0 D 2 C 0 B 2 A)
+
+
+     A
+   /   \
+  B     C             TREE 2
+ /     / \
+M      D  E
+      /
+     F
+is represented as (A 2 B 1 M 0 C 2 D 1 F 0 E 0)
+REVERSED (0 E 0 F 1 D 2 C 0 M 1 B 2 A)
+
+      A
+   /    \
+  B      C            TREE 3
+ / \     / \
+M   N    D  E
+        /
+       F
+is represented as (A 2 B 2 M 0 N 0 C 2 D 1 F 0 E 0)
+REVERSED (0 E 0 F 1 D 2 C 0 N 0 M 2 B 2 A)
+
+       A
+    /     \
+   /       \
+  B         C         TREE 4
+ / \        / \
+M   N      D  E
+     \    /
+      P  F
+represented as (A 2 B 2 M 0 N 1 P 0 C 2 D 1 F 0 E 0)
+REVERSED (0 E 0 F 1 D 2 C 0 P 1 N 0 M 2 B 2 A) 
+
+       A
+    /     \
+   /       \
+  B         C         TREE 5
+ / \        / \
+M   N      D  E
+   /  \   /
+  Q    P  F
+represented as (A 2 B 2 M 0 N 2 Q 0 P 0 C 2 D 1 F 0 E 0)
+REVERSED (0 E 0 F 1 D 2 C 0 P 0 Q 2 N 0 M 2 B 2 A)
+
+         A
+         /
+        B
+       /
+      C               TREE 6
+     /
+    D
+   /
+  E
+represented as (A 1 B 1 C 1 D 1 E 0)
+
+
+ inorder is  (left root right)
+for tree 1, inorder is: B A D C E
+for tree 2, inorder is: M B A F D C E
+for tree 3, inorder is: M B N A F D C E
+for tree 4, inorder is: M B N P A F D C E
+for tree 5, inorder is: M B Q N P A F D C E
+for tree 6, inorder is: E D C B A
+
+We need to go as far left as possible then start building "up and then right". We will parse the list
+until we find the leftmost child (aka the first node that has zero children). Then we will add the nodes 
+that are before it in the list up until there is a path where we can go right (aka we find a node that has
+two children). The execution on tree 5 will look like this:
+
+
+TREE LIST                                     Result list
+(A 2 B 2 M 0 N 2 Q 0 P 0 C 2 D 1 F 0 E 0)     M 0 leftmst child. We add untill we find the fisrt node with two
+                                              children and remove the nodes we added from the list 
+
+(A 2         N 2 Q 0 P 0 C 2 D 1 F 0 E 0)     (M B)
+(A 2                 P 0 C 2 D 1 F 0 E 0)     (M B Q N)
+(                        C 2 D 1 F 0 E 0)     (M B Q N P A)
+(                                    E 0)     (N B Q N P A F D C)
+(                                       )     (N B Q N P A F D C E)
+
+get_nr_children (l1n1 l2n2...lmnm, elem) = {
+      null if the list is empty
+      n1 if l1 = elem
+      get_nr_children (l2n2...lmnm, elem) otherwise
+
+}
+
+get_reversed (l1n1 l2n2, ...lmnm) = {
+     [] if the list is empty
+     get_reversed(l2n2...lmnm) U l1n1 otherwise 
+}
+
+get_nr_children (n1l1 n2l2... nmlm,  elem) = {
+      null if the list is empty
+      n1 if l1 = elem
+      get_nr_children (l2n2...lmnm, elem) otherwise
+}
+
+|#
+
+(defun get_nr_children (l e)
+  (cond
+   (  (null l) nil )
+   (  (equal (car l) e) (cadr l) )
+   (  t  (get_nr_children (cddr l) e) )
+   )
+)
+
+(defun get_reversed (l)
+  (cond
+   ( (null l) nil )
+   ( t (append (get_reversed (cdr l)) (list (car l))))
+   )
+)
+
+(defun get_nr_children_rev (l e)
+  (cond
+   (  (null l) nil )
+   (  (equal (cadr l) e) (car l) )
+   (  t  (get_nr_children_rev (cddr l) e) )
+   )
+)
+#|
+remove node (l1n1 l2n2...lmnm, e) = {
+      [] if the list is empty
+      remove_node (l2n2..., e) if l1 = e
+      remove_node l1n1 U (l2n2....lmnm, e) otherwise
+}
+
+|#
+(defun remove_node (l e)
+  (cond
+   (  (null l) nil )
+   (  (equal (car l) e) (remove_node (cddr l) e) )
+   (  t (append (list (car l) (cadr l)) (remove_node (cddr l) e)) )
+   )
+)
+
+#|
+fount initially 0
+return_nodes (n1l1 n2l2 ... nmlm e found) = {
+           [] if the list is empty
+           l1 if found = 1 and n1 = 2 (this is the case where we have found a node
+                                        with a right subtree, so we will need to 
+                                       treat it differently in another run)
+           l1 U return_nodes (n2l2 ... nmlm e 1) if l1 = e or found = 1 (this covers the case
+                                       when we find the leftmost
+                                       node or that node's parents that have no other children)
+           return_nodes(n2l2 ... nmlm e found) otherwise
+}
+CL-USER 4 : 2 >  (return_nodes ' (0 E 0 F 1 D 2 C 0 P 0 Q 2 N 0 M 2 B 2 A) 'M 0)
+(M B)
+|#
+
+(defun return_nodes( l e found)
+ (cond
+  ((null l) nil)
+  ((and (= found 1) (= (car l) 2)) (list (cadr l)) )
+  ((or  (= found 1) (equal (cadr l) e)) (cons (cadr l) (return_nodes (cddr l) e 1)))
+  (T (return_nodes (cddr l) e found))
+  )
+)
+
+#|
+remove_nodes (n1l1 n2l2 ... nmlm e found) = {
+          [] if the list is empty
+          remove_nodes(n2l2... e 0) if found = 1 and n1 = 2 
+          remove_nodes(n2l2... e 1) if l1 = e or found = 1
+          n1l1 U remove_nodes (n1l1...e found) otherwise 
+}
+
+|#
+(defun remove_nodes( l e found)
+ (cond
+  ((null l) nil)
+  ((and (= found 1) (= (car l) 2))  (remove_nodes (cddr l) e 0))
+  ((or  (= found 1) (equal (cadr l) e)) (remove_nodes (cddr l) e 1))
+  (T (append (list (car l) (cadr l)) (remove_nodes (cddr l) e found)))
+  )
+)
+
+#|
+function that finds the leftmost child and then runs return_nodes on it
+one_run_nodes (l1n1 l2n2... lmnm, reverse_list = n1l1 n2l2 ... nmlm) = {
+          [] if the list is empty 
+          one_run_nodes(l2n2..., reverse_list) if n1 != 0
+          return_nodes(reverse_list, l1, 0) if n1 = 0 
+}
+|#
+
+(defun one_run_nodes (l reverse_list)
+  (cond
+   ((null l) nil)
+   ((/= (cadr l) 0) (one_run_nodes (cddr l) reverse_list))
+   (T (return_nodes reverse_list (car l) 0))
+   )
+)
+
+(defun one_run_nodes_main (l)
+  (cond
+   ((null l) nil)
+   (T (one_run_nodes l (get_reversed l)))
+   )
+)
+
+#|
+one_run_remove (l1n1 l2n2... lmnm, reverse_list = n1l1 n2l2 ... nmlm) = {
+          [] if the list is empty 
+          one_run_remove(l2n2..., reverse_list) if n1 != 0
+          get_reversed (remove_nodes(reverse_list, l1, 0)) if n1 = 0 
+|#
+
+(defun one_run_remove (l reverse_list)
+  (cond
+   ((null l) nil)
+   ((/= (cadr l) 0) (one_run_remove (cddr l) reverse_list))
+   (T (remove_nodes  reverse_list (car l) 0))
+   )
+)
+
+(defun one_run_remove_main (l)
+  (cond
+   ((null l) nil)
+   (T (get_reversed (one_run_remove l (get_reversed l))))
+   )
+)
+
+
+
+#|
+CL-USER 7 : 3 > (one_run_nodes_main ' (A 2 B 2 M 0 N 2 Q 0 P 0 C 2 D 1 F 0 E 0))
+(M B)
+
+CL-USER 8 : 3 > (one_run_nodes_main ' (A 2 N 2 Q 0 P 0 C 2 D 1 F 0 E 0))
+(Q N)
+
+CL-USER 9 : 3 >  (one_run_nodes_main ' (A 2 P 0 C 2 D 1 F 0 E 0))
+(P A)
+
+CL-USER 10 : 3 >  (one_run_nodes_main ' (C 2 D 1 F 0 E 0))
+(F D C)
+
+CL-USER 11 : 3 >  (one_run_nodes_main ' (E 0))
+(E)
+
+CL-USER 12 : 3 >  (one_run_nodes_main ' ())
+NIL
+
+CL-USER 13 : 3 >  (one_run_remove_main ' (A 2 B 2 M 0 N 2 Q 0 P 0 C 2 D 1 F 0 E 0))
+(0 E 0 F 1 D 2 C 0 P 0 Q 2 N 2 A)
+
+CL-USER 14 : 3 >  (one_run_remove_main ' (A 2 B 2 M 0 N 2 Q 0 P 0 C 2 D 1 F 0 E 0))
+(A 2 N 2 Q 0 P 0 C 2 D 1 F 0 E 0)
+ 
+CL-USER 15 : 3 >  (one_run_remove_main ' (A 2  N 2 Q 0 P 0 C 2 D 1 F 0 E 0))
+(A 2 P 0 C 2 D 1 F 0 E 0)
+
+CL-USER 16 : 3 > (one_run_remove_main ' (A 2 P 0 C 2 D 1 F 0 E 0))
+(C 2 D 1 F 0 E 0)
+
+CL-USER 17 : 3 > (one_run_remove_main ' (C 2 D 1 F 0 E 0))
+(E 0)
+
+CL-USER 18 : 3 >  (one_run_remove_main ' (E 0))
+NIL
+|#
+
+
+#|
+solve (list, result_list) = {
+        result_list if the list is empty
+        solve (one_rum_remove_main (list), append(result_list, one_run_nodes_main(list) otherwise
+|#
+
+(defun solve (l result_list)
+  (cond
+   ((null l) result_list)
+   (T (solve (one_run_remove_main l) (append result_list (one_run_nodes_main l))) )
+   )
+)
+
+(defun solve_main (l)
+  (cond 
+   ((null l) nil)
+   (T (solve l '()))
+   )
+)
+
+(print "TREE 1")
+(print  (solve_main ' (A 2 B 0 C 2 D 0 E 0)))
+(print "TREE 2")
+(print  (solve_main ' (A 2 B 1 M 0 C 2 D 1 F 0 E 0)))
+(print "TREE 3")
+(print  (solve_main ' (A 2 B 2 M 0 N 0 C 2 D 1 F 0 E 0)))
+(print "TREE 4")
+(print  (solve_main ' (A 2 B 2 M 0 N 1 P 0 C 2 D 1 F 0 E 0)))
+(print "TREE 5")
+(print  (solve_main '(A 2 B 2 M 0 N 2 Q 0 P 0 C 2 D 1 F 0 E 0)))
+(print "TREE 6")
+(print  (solve_main ' (A 1 B 1 C 1 D 1 E 0)))
+
